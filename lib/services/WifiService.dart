@@ -4,7 +4,7 @@ import 'package:wifi_iot/wifi_iot.dart';
 import '../models/wifi_model.dart';
 
 class WifiService {
-  static final apiUrl = 'http://192.168.31.72:5000/';
+  static final apiUrl = 'http://192.168.2.224:5000/';
   static Future<List<WifiModel>> getNearbyWifi() async {
     List<WifiModel> wifiList = [];
 
@@ -45,7 +45,8 @@ class WifiService {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'wifi_devices': jsonData}), // Fixed key
+        body: jsonEncode({'wifi_devices': jsonData,
+        'device_tag': "123"}), // Fixed key
       );
 
       if (response.statusCode == 200) {
