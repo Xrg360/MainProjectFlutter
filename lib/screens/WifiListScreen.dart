@@ -1,97 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:wifi_strength_test/screens/ResultScreen.dart';
-// import '../services/wifi_service.dart';
-// import '../models/wifi_model.dart';
-
-// class WifiListScreen extends StatefulWidget {
-//   @override
-//   _WifiListScreenState createState() => _WifiListScreenState();
-// }
-
-// class _WifiListScreenState extends State<WifiListScreen> {
-//   List<WifiModel> wifiList = [];
-//   bool isLoading = true;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     loadWifiData();
-//   }
-
-//   void loadWifiData() async {
-//     try {
-//       final data = await WifiService.getNearbyWifi();
-//       setState(() {
-//         wifiList = data;
-//         isLoading = false;
-//       });
-//     } catch (e) {
-//       setState(() {
-//         isLoading = false;
-//       });
-//       print('Error loading Wi-Fi data: $e');
-//     }
-//   }
-
-//   void sendWifiData() async {
-//     try {
-//       await WifiService.sendWifiDataToApi(wifiList);
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Wi-Fi data sent to the server!')),
-//       );
-
-//       // Fetch the result from the API
-//       final result = await WifiService.recieveResultfromApi();
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Result received from the server!')),
-//       );
-
-//       // Navigate to ResultScreen
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(
-//           builder: (context) => ResultScreen(result: result),
-//         ),
-//       );
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Failed to send Wi-Fi data: $e')),
-//       );
-//       print('Error sending Wi-Fi data: $e');
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Nearby Wi-Fi Networks'),
-//       ),
-//       body: isLoading
-//           ? Center(child: CircularProgressIndicator())
-//           : wifiList.isEmpty
-//               ? Center(child: Text('No Wi-Fi networks found.'))
-//               : ListView.builder(
-//                   itemCount: wifiList.length,
-//                   itemBuilder: (context, index) {
-//                     final wifi = wifiList[index];
-//                     return ListTile(
-//                       leading: Icon(Icons.wifi, color: Colors.blue),
-//                       title: Text(wifi.name),
-//                       subtitle:
-//                           Text('Signal Strength: ${wifi.signalStrength} dBm'),
-//                     );
-//                   },
-//                 ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: sendWifiData,
-//         child: Icon(Icons.send),
-//         tooltip: 'Send Wi-Fi Data',
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:wifi/screens/ResultScreen.dart';
 import 'dart:async';
@@ -143,14 +49,18 @@ class _WifiListScreenState extends State<WifiListScreen> {
     }
   }
 
-  void _showCustomSnackbar({required String message, required Color backgroundColor, required IconData icon}) {
+  void _showCustomSnackbar(
+      {required String message,
+      required Color backgroundColor,
+      required IconData icon}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             Icon(icon, color: Colors.white),
             SizedBox(width: 10),
-            Expanded(child: Text(message, style: TextStyle(color: Colors.white))),
+            Expanded(
+                child: Text(message, style: TextStyle(color: Colors.white))),
           ],
         ),
         backgroundColor: backgroundColor,
@@ -166,31 +76,39 @@ class _WifiListScreenState extends State<WifiListScreen> {
 
   void sendWifiData() async {
     try {
-      await WifiService.sendWifiDataToApi(wifiList);
+      String device_tag = "device_1";
 
-      // _showCustomSnackbar(
-      //   message: "Wi-Fi data sent successfully!",
-      //   backgroundColor: Colors.greenAccent.shade700,
-      //   icon: Icons.check_circle,
-      // );
+      final result = await WifiService.sendWifiDataToApi(wifiList, device_tag);
+      print('Sending Wi-Fi data with device_tag: $device_tag');
+      print(
+          'Wi-Fi devices being sent: ${wifiList.map((wifi) => wifi.name).toList()}');
 
-      // Fetch the result from the API
-      final result = await WifiService.recieveResultfromApi();
+      if (result != null) {
+        _showCustomSnackbar(
+          message: "Result received from server!",
+          backgroundColor: Colors.blueAccent.shade700,
+          icon: Icons.wifi,
+        );
 
-      _showCustomSnackbar(
-        message: "Result received from server!",
-        backgroundColor: Colors.blueAccent.shade700,
-        icon: Icons.wifi,
-      );
+        // Navigate to ResultScreen with the result from POST response
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultScreen(result: result),
+          ),
+        );
+      } else {
+        print('Server returned null result');
 
-      // Navigate to ResultScreen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResultScreen(result: result),
-        ),
-      );
+        _showCustomSnackbar(
+          message: "Failed to get results. Please try again.",
+          backgroundColor: Colors.redAccent.shade700,
+          icon: Icons.error,
+        );
+      }
     } catch (e) {
+      print('Error details: $e');
+
       _showCustomSnackbar(
         message: "Failed to send Wi-Fi data.",
         backgroundColor: Colors.redAccent.shade700,
@@ -244,49 +162,57 @@ class _WifiListScreenState extends State<WifiListScreen> {
                       Expanded(
                         child: isLoading
                             ? Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation(Colors.redAccent),
-                          ),
-                        )
+                                child: CircularProgressIndicator(
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.redAccent),
+                                ),
+                              )
                             : wifiList.isEmpty
-                            ? Center(
-                          child: Text(
-                            'No Wi-Fi networks found.',
-                            style: TextStyle(color: Colors.white70, fontSize: 18),
-                          ),
-                        )
-                            : ListView.builder(
-                          itemCount: wifiList.length,
-                          itemBuilder: (context, index) {
-                            final wifi = wifiList[index];
-                            return Container(
-                              margin: EdgeInsets.symmetric(vertical: 8),
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: ListTile(
-                                leading: Icon(Icons.wifi, color: Colors.blueAccent),
-                                title: Text(
-                                  wifi.name,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                subtitle: Text(
-                                  'Signal Strength: ${wifi.signalStrength} dBm',
-                                  style: TextStyle(color: Colors.white70),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                                ? Center(
+                                    child: Text(
+                                      'No Wi-Fi networks found.',
+                                      style: TextStyle(
+                                          color: Colors.white70, fontSize: 18),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    itemCount: wifiList.length,
+                                    itemBuilder: (context, index) {
+                                      final wifi = wifiList[index];
+                                      return Container(
+                                        margin:
+                                            EdgeInsets.symmetric(vertical: 8),
+                                        padding: EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.5),
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                        ),
+                                        child: ListTile(
+                                          leading: Icon(Icons.wifi,
+                                              color: Colors.blueAccent),
+                                          title: Text(
+                                            wifi.name,
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                          subtitle: Text(
+                                            'Signal Strength: ${wifi.signalStrength} dBm',
+                                            style: TextStyle(
+                                                color: Colors.white70),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
                       ),
                       SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: sendWifiData,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.redAccent,
-                          padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
