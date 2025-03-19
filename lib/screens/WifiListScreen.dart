@@ -29,7 +29,7 @@ class _WifiListScreenState extends State<WifiListScreen> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       sendWifiData();
     });
   }
@@ -75,9 +75,13 @@ class _WifiListScreenState extends State<WifiListScreen> {
   }
 
   void sendWifiData() async {
-    try {
-      String device_tag = "device_1";
+    if (wifiList.isEmpty) {
+      print('No Wi-Fi data available to send.');
+      return;
+    }
 
+    try {
+      String device_tag = "device_bvn";
       final result = await WifiService.sendWifiDataToApi(wifiList, device_tag);
       print('Sending Wi-Fi data with device_tag: $device_tag');
       print(
@@ -90,8 +94,8 @@ class _WifiListScreenState extends State<WifiListScreen> {
           icon: Icons.wifi,
         );
 
-        // Navigate to ResultScreen with the result from POST response
-        Navigator.push(
+        // **Replace current screen with ResultScreen (no back stacking)**
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => ResultScreen(result: result),
@@ -99,7 +103,6 @@ class _WifiListScreenState extends State<WifiListScreen> {
         );
       } else {
         print('Server returned null result');
-
         _showCustomSnackbar(
           message: "Failed to get results. Please try again.",
           backgroundColor: Colors.redAccent.shade700,
@@ -108,13 +111,11 @@ class _WifiListScreenState extends State<WifiListScreen> {
       }
     } catch (e) {
       print('Error details: $e');
-
       _showCustomSnackbar(
         message: "Failed to send Wi-Fi data.",
         backgroundColor: Colors.redAccent.shade700,
         icon: Icons.error,
       );
-      print('Error sending Wi-Fi data: $e');
     }
   }
 

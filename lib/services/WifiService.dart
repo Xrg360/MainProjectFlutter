@@ -6,7 +6,8 @@ import '../models/wifi_model.dart';
 
 class WifiService {
   static final String apiUrl =
-      'http://192.168.1.35:5000/'; // Update Flask Server IP
+      'https://mainproject-qc8w.onrender.com'; // Update Flask Server IP
+  // 'http://192.168.245.72:5000/'; // Update Flask Server IP
   static IO.Socket? socket;
 
   /// **Fetch nearby Wi-Fi networks**
