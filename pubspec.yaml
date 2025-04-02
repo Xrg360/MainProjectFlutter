@@ -39,6 +39,10 @@ dependencies:
   socket_io_client: ^3.0.2
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
+
+  flutter_native_splash: ^2.3.10
+
   flutter_test:
     sdk: flutter
 
@@ -59,6 +63,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/icons/app_icon.PNG
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -90,3 +97,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.PNG"
+  adaptive_icon_foreground: "assets/icons/app_icon.PNG"
+  adaptive_icon_background: "#000000"
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/icons/app_icon.PNG
+  android_12:
+    image: assets/icons/app_icon.PNG
+    color: "#000000"
